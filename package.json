@@ -1,0 +1,22 @@
+
+{
+  "name": "react-native-simple-contacts",
+  "version": "1.0.0",
+  "description": "Simple access to contacts for iOS and Android",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react-native contacts address addressbook simple phone number"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucbelliveau/react-native-simple-contacts"
+  },
+  "author": "Luc Belliveau",
+  "license": "MIT",
+  "peerDependencies": {
+    "react-native": "^0.41.2"
+  }
+}
