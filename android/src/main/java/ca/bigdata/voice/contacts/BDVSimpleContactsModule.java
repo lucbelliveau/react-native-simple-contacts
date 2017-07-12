@@ -1,6 +1,7 @@
 
 package ca.bigdata.voice.contacts;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -33,78 +34,88 @@ public class BDVSimpleContactsModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getContacts(Promise promise) {
-        // TODO: Move contact searchers into standalone lib
+    public void getContacts(final Promise promise) {
         Log.d(TAG, "getContacts");
 
-        ContentResolver cr = getCurrentActivity().getContentResolver();
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                Activity ca = getCurrentActivity();
+                if (ca == null) {
+                    promise.reject("1", "Null activity");
+                    return;
+                }
+                ContentResolver cr = ca.getContentResolver();
 
-        JSONArray jsonA = new JSONArray();
+                JSONArray jsonA = new JSONArray();
 
-        Cursor cursor = cr.query(
-                ContactsContract.Contacts.CONTENT_URI,
-                new String[]{
-                        ContactsContract.Contacts.DISPLAY_NAME,
-                        ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
-                        ContactsContract.Contacts._ID
-                },
-                null, null, null
-        );
-        try {
-            while (cursor.moveToNext()) {
-                String contactID = cursor.getString(
-                        cursor.getColumnIndex(ContactsContract.Contacts._ID)
-                );
-                Cursor cursorPhone = getCurrentActivity().getContentResolver().query(
-                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? AND " +
-                                ContactsContract.CommonDataKinds.Phone.TYPE + " = " +
-                                ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE,
-                        new String[]{contactID},
-                        null
+                Cursor cursor = cr.query(
+                        ContactsContract.Contacts.CONTENT_URI,
+                        new String[]{
+                                ContactsContract.Contacts.DISPLAY_NAME,
+                                ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
+                                ContactsContract.Contacts._ID
+                        },
+                        null, null, null
                 );
                 try {
-                    if (cursorPhone.moveToFirst()) {
-                        JSONObject json = new JSONObject();
-                        json.put(
-                                "key",
-                                "contact_" + contactID
+                    while (cursor.moveToNext()) {
+                        String contactID = cursor.getString(
+                                cursor.getColumnIndex(ContactsContract.Contacts._ID)
                         );
-                        json.put(
-                                "name",
-                                cursor.getString(
-                                        cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
-                                )
+                        Cursor cursorPhone = ca.getContentResolver().query(
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? AND " +
+                                        ContactsContract.CommonDataKinds.Phone.TYPE + " = " +
+                                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE,
+                                new String[]{contactID},
+                                null
                         );
-                        json.put(
-                                "avatar",
-                                cursor.getString(
-                                        cursor.getColumnIndex(
-                                                ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
+                        try {
+                            if (cursorPhone.moveToFirst()) {
+                                JSONObject json = new JSONObject();
+                                json.put(
+                                        "key",
+                                        "contact_" + contactID
+                                );
+                                json.put(
+                                        "name",
+                                        cursor.getString(
+                                                cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
                                         )
-                                )
-                        );
-                        json.put(
-                                "number",
-                                cursorPhone.getString(
-                                        cursorPhone.getColumnIndex(
-                                                ContactsContract.CommonDataKinds.Phone.NUMBER
+                                );
+                                json.put(
+                                        "avatar",
+                                        cursor.getString(
+                                                cursor.getColumnIndex(
+                                                        ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
+                                                )
                                         )
-                                )
-                        );
-                        jsonA.put(json);
+                                );
+                                json.put(
+                                        "number",
+                                        cursorPhone.getString(
+                                                cursorPhone.getColumnIndex(
+                                                        ContactsContract.CommonDataKinds.Phone.NUMBER
+                                                )
+                                        )
+                                );
+                                jsonA.put(json);
+                            }
+                        } catch (JSONException exc) {
+                            Log.e(TAG, exc.toString());
+                        } finally {
+                            cursorPhone.close();
+                        }
                     }
-                } catch (JSONException exc) {
-                    Log.e(TAG, exc.toString());
                 } finally {
-                    cursorPhone.close();
+                    cursor.close();
                 }
+                promise.resolve(jsonA.toString());
             }
-        } finally {
-            cursor.close();
-        }
-        promise.resolve(jsonA.toString());
+        };
+        thread.start();
     }
 
     @ReactMethod

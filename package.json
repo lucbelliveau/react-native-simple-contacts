@@ -1,6 +1,6 @@
 {
   "name": "react-native-simple-contacts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple access to contacts for iOS and Android",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,6 @@
   "author": "Luc Belliveau",
   "license": "MIT",
   "peerDependencies": {
-    "react-native": "^0.41.2"
+    "react-native": "^0.45.1"
   }
 }
