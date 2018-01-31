@@ -16,7 +16,7 @@
   NSData *jsonData = [NSJSONSerialization dataWithJSONObject:self
                                                      options:(NSJSONWritingOptions)    (prettyPrint ? NSJSONWritingPrettyPrinted : 0)
                                                        error:&error];
-  
+
   if (! jsonData) {
     NSLog(@"bv_jsonStringWithPrettyPrint: error: %@", error.localizedDescription);
     return @"{}";
@@ -65,23 +65,24 @@
       NSString *displayName = [contact.givenName stringByAppendingString:@" "];
       displayName = [displayName stringByAppendingString:contact.familyName];
       NSString *mobileNumber = @"";
-      
+
       for (CNLabeledValue<CNPhoneNumber*>* number in contact.phoneNumbers) {
         if ([number.label isEqualToString:CNLabelPhoneNumberMobile]) {
           mobileNumber =  [[number valueForKey:@"value"] valueForKey:@"digits"];
+          break;
+        } else if ([mobileNumber isEqualToString:@""]) {
+          mobileNumber =  [[number valueForKey:@"value"] valueForKey:@"digits"];
         }
       }
-      if (![mobileNumber isEqualToString:@""]) {
-        NSMutableDictionary *user = [[NSMutableDictionary alloc] init];
-        [user setValue:contact.identifier forKey:@"key"];
-        [user setValue:displayName forKey:@"name"];
-        [user setValue:mobileNumber forKey:@"number"];
-        if (contact.imageDataAvailable) {
-          NSString *avatar = @"data:image/png;base64,";
-          [user setValue:[avatar stringByAppendingString:[contact.thumbnailImageData base64EncodedStringWithOptions:0]] forKey:@"avatar"];
-        }
-        [self.contacts addObject:user];
+      NSMutableDictionary *user = [[NSMutableDictionary alloc] init];
+      [user setValue:contact.identifier forKey:@"key"];
+      [user setValue:displayName forKey:@"name"];
+      [user setValue:mobileNumber forKey:@"number"];
+      if (contact.imageDataAvailable) {
+        NSString *avatar = @"data:image/png;base64,";
+        [user setValue:[avatar stringByAppendingString:[contact.thumbnailImageData base64EncodedStringWithOptions:0]] forKey:@"avatar"];
       }
+      [self.contacts addObject:user];
     }];
   }
 }
