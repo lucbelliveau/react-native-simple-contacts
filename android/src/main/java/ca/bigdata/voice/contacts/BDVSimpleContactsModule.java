@@ -34,7 +34,20 @@ public class BDVSimpleContactsModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getContacts(final String mail, final Promise promise) {
+    public void getContacts(final Promise promise) {
+        Log.d(TAG, "getContacts");
+        Uri uri = ContactsContract.Contacts.CONTENT_URI;
+        this.getContactList(uri, promise);
+    }
+
+    @ReactMethod
+    public void getContactsByFilter(final String filter, final Promise promise) {
+        Log.d(TAG, "getContactsByFilter");
+        Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_FILTER_URI, Uri.encode(filter));
+        this.getContactList(uri, promise);
+    }
+
+    private void getContactList(final Uri uri, final Promise promise) {
         Log.d(TAG, "getContacts");
 
         Thread thread = new Thread() {
@@ -49,8 +62,8 @@ public class BDVSimpleContactsModule extends ReactContextBaseJavaModule {
 
                 JSONArray jsonA = new JSONArray();
 
-                Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_FILTER_URI, Uri.encode(mail));
-                Cursor cursor = cr.query(uri,
+                Cursor cursor = cr.query(
+                        uri,
                         new String[]{
                                 ContactsContract.Contacts.DISPLAY_NAME,
                                 ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,

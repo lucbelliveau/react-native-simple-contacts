@@ -21,6 +21,11 @@ simpleContacts.getContacts().then((contacts) => {
   // Do something with the contacts
 });
 
+// Get all contacts for filter string (eg: email address)
+simpleContacts.getContactsByFilter("username@domain.example").then((contacts) => {
+  // Do something with the contact
+});
+
 // Get a specific contact based on a phone number
 simpleContacts.findContactByNumber(number).then((contact) => {
   // Do something with the contact
@@ -36,7 +41,8 @@ simpleContacts.getProfile().then((profile) => {
 
 Function | Description
 --- | ---
-<nobr>**getContacts**()</nobr> | Returns an array of contacts
+<nobr>**getContacts**()</nobr> | Returns an array of all contacts
+<nobr>**getContactsByFilter**(*string*)</nobr> | Returns an array of contacts by filter (eg: by email address)
 <nobr>**getProfile**()</nobr> | Return the user's profile.
 <nobr>**findContactByNumber**(*number*)</nobr> | Return the contact that matches the provided number.
 
